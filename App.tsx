@@ -87,7 +87,9 @@ const App: React.FC = () => {
       }
       return [...prev, { ...product, cartQuantity: 1 }];
     });
-    alert('কার্টে যোগ করা হয়েছে!');
+    // সরাসরি কার্ট পেজে নিয়ে যাওয়া হবে
+    setView('cart');
+    window.scrollTo(0, 0);
   };
 
   const removeFromCart = (productId: string) => {
@@ -158,7 +160,7 @@ const App: React.FC = () => {
         {view === 'checkout' && (
           <Checkout 
             cart={cart} 
-            onSuccess={() => { setCart([]); setView('home'); alert('অর্ডার সফল হয়েছে!'); }} 
+            onSuccess={() => { setCart([]); setView('home'); alert('অর্ডার সফলভাবে সাবমিট হয়েছে!'); }} 
             onCancel={() => setView('cart')}
           />
         )}
