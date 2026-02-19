@@ -12,13 +12,14 @@ interface AdminProps {
 }
 
 const Admin: React.FC<AdminProps> = ({ products, onAdd, onUpdate, onDelete, onDeleteAll }) => {
-  // লোকাল স্টোরেজ চেক করে লগইন অবস্থা নির্ধারণ করা হচ্ছে
+  // লোকাল স্টোরেজ চেক করে লগইন অবস্থা নির্ধারণ করা হচ্ছে (পেজ ভিউ করার জন্য)
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem('mxn_admin_session') === 'true';
   });
   
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // পাসওয়ার্ড দেখার জন্য স্টেট
+  const [actionPassword, setActionPassword] = useState(''); // প্রতি একশনের জন্য পাসওয়ার্ড স্টেট
+  const [showPassword, setShowPassword] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showGuide, setShowGuide] = useState(!isConfigured);
   const [configInput, setConfigInput] = useState('');
@@ -41,10 +42,9 @@ const Admin: React.FC<AdminProps> = ({ products, onAdd, onUpdate, onDelete, onDe
     e.preventDefault();
     if (password === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
-      // সেশন সেভ করা হচ্ছে
       localStorage.setItem('mxn_admin_session', 'true');
     } else {
-      alert('ভুল পাসওয়ার্ড! সঠিক পাসওয়ার্ড: kuyasa.com');
+      alert('ভুল পাসওয়ার্ড!');
     }
   };
 
@@ -77,7 +77,6 @@ const Admin: React.FC<AdminProps> = ({ products, onAdd, onUpdate, onDelete, onDe
       }
       jsonStr = jsonStr.trim().replace(/;$/, '');
       
-      // eslint-disable-next-line no-new-func
       const configObj = new Function(`return ${jsonStr}`)();
 
       if (!configObj.apiKey || !configObj.projectId) {
@@ -100,9 +99,37 @@ const Admin: React.FC<AdminProps> = ({ products, onAdd, onUpdate, onDelete, onDe
     }
   };
 
+  // ডিলিট করার সময় পাসওয়ার্ড চাওয়া হবে
+  const handleDeleteCheck = (id: string) => {
+    const userPass = prompt("পণ্যটি ডিলিট করতে অ্যাডমিন পাসওয়ার্ড দিন:");
+    if (userPass === ADMIN_PASSWORD) {
+      onDelete(id);
+    } else if (userPass !== null) {
+      alert("ভুল পাসওয়ার্ড! ডিলিট করা সম্ভব হয়নি।");
+    }
+  };
+
+  // সব ডিলিট করার সময় পাসওয়ার্ড চাওয়া হবে
+  const handleDeleteAllCheck = () => {
+    const userPass = prompt("সব পণ্য ডিলিট করতে অ্যাডমিন পাসওয়ার্ড দিন:");
+    if (userPass === ADMIN_PASSWORD) {
+      onDeleteAll();
+    } else if (userPass !== null) {
+      alert("ভুল পাসওয়ার্ড!");
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim()) return alert('নাম দিন');
+    
+    // ১. নাম চেক
+    if (!formData.name.trim()) return alert('পণ্যের নাম দিন');
+
+    // ২. অ্যাকশন পাসওয়ার্ড চেক (প্রতিবার সাবমিটের সময়)
+    if (actionPassword !== ADMIN_PASSWORD) {
+      alert('পাসওয়ার্ড ভুল! পণ্য সেভ বা আপডেট করতে সঠিক পাসওয়ার্ড দিন।');
+      return;
+    }
 
     const productData: Omit<Product, 'id'> = {
       ...formData,
@@ -119,13 +146,15 @@ const Admin: React.FC<AdminProps> = ({ products, onAdd, onUpdate, onDelete, onDe
       onAdd(productData);
     }
 
+    // ফর্ম রিসেট
     setFormData({ name: '', description: '', quantity: '', mrp: '', dp: '', pv: '', image: '', category: 'General' });
+    setActionPassword(''); // পাসওয়ার্ড ফিল্ড ক্লিয়ার করা হলো
     if (fileInputRef.current) fileInputRef.current.value = '';
     
     if (isConfigured) {
-      alert('সফল! পণ্যটি ডাটাবেসে সেভ হয়েছে এবং সবাই এখন এটি দেখতে পাবে।');
+      alert('সফল! পণ্যটি ডাটাবেসে সেভ হয়েছে।');
     } else {
-      alert('সেভ হয়েছে (লোকাল)। সবাইকে দেখাতে ডাটাবেস কানেক্ট করুন।');
+      alert('সেভ হয়েছে (লোকাল)।');
     }
   };
 
@@ -145,7 +174,7 @@ const Admin: React.FC<AdminProps> = ({ products, onAdd, onUpdate, onDelete, onDe
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="পাসওয়ার্ড লিখুন..."
-              className="w-full bg-gray-50 text-gray-900 border-2 border-gray-200 focus:border-green-500 focus:bg-white p-4 pr-12 rounded-2xl outline-none font-bold text-center transition-all placeholder-gray-400"
+              className="w-full bg-gray-50 text-gray-900 border-2 border-gray-200 focus:border-green-500 focus:bg-white p-4 pr-12 rounded-2xl outline-none font-bold transition-all placeholder-gray-400"
               autoFocus
               required
             />
@@ -165,7 +194,6 @@ const Admin: React.FC<AdminProps> = ({ products, onAdd, onUpdate, onDelete, onDe
           <button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white font-black py-4 rounded-2xl shadow-lg shadow-green-200 transition-all active:scale-95">
             প্রবেশ করুন
           </button>
-          <p className="mt-4 text-[10px] text-gray-400 font-bold">ডিফল্ট পাসওয়ার্ড: kuyasa.com</p>
         </form>
       </div>
     );
@@ -246,16 +274,22 @@ const Admin: React.FC<AdminProps> = ({ products, onAdd, onUpdate, onDelete, onDe
           <h2 className="text-xl font-black mb-6 text-gray-800">{editingId ? 'পণ্য এডিট করুন' : 'নতুন পণ্য যোগ'}</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="পণ্যের নাম *" className="w-full bg-gray-50 p-4 rounded-2xl outline-none font-bold" required />
-            <div className="grid grid-cols-2 gap-3">
-              <select name="category" value={formData.category} onChange={handleInputChange} className="w-full bg-gray-50 p-4 rounded-2xl outline-none font-bold cursor-pointer">
-                <option value="Personal Care">Personal Care</option>
-                <option value="Medicine">Medicine</option>
-                <option value="Hair Care">Hair Care</option>
-                <option value="Nutrition">Nutrition</option>
-                <option value="General">General</option>
-              </select>
+            
+            {/* ক্যাটাগরি এবং পরিমাণ সেকশন */}
+            <div className="grid grid-cols-1 gap-3">
+              <div className="relative">
+                <label className="absolute -top-2 left-3 bg-white px-1 text-[10px] font-bold text-green-600">ক্যাটাগরি সিলেক্ট করুন</label>
+                <select name="category" value={formData.category} onChange={handleInputChange} className="w-full bg-gray-50 border border-gray-200 p-4 rounded-2xl outline-none font-bold cursor-pointer text-gray-800 focus:border-green-500 transition-colors">
+                  <option value="General">General (সাধারণ)</option>
+                  <option value="Medicine">Medicine (ঔষধ)</option>
+                  <option value="Hair Care">Hair Care (চুলের যত্ন)</option>
+                  <option value="Personal Care">Personal Care (ব্যক্তিগত যত্ন)</option>
+                  <option value="Food & Nutrition">Food & Nutrition (খাবার ও পুষ্টি)</option>
+                </select>
+              </div>
               <input type="text" name="quantity" value={formData.quantity} onChange={handleInputChange} placeholder="পরিমাণ (যেমন: ১০০ গ্রাম)" className="w-full bg-gray-50 p-4 rounded-2xl outline-none font-bold" />
             </div>
+
             <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="বিবরণ..." className="w-full bg-gray-50 p-4 rounded-2xl outline-none" rows={2} />
             <div className="grid grid-cols-3 gap-2">
               <input type="number" name="mrp" value={formData.mrp} onChange={handleInputChange} placeholder="MRP" className="bg-gray-50 p-3 rounded-xl text-center font-bold" />
@@ -266,11 +300,25 @@ const Admin: React.FC<AdminProps> = ({ products, onAdd, onUpdate, onDelete, onDe
               {formData.image ? <img src={formData.image} className="w-16 h-16 object-cover rounded-xl mx-auto" /> : <p className="text-xs font-bold text-gray-400 uppercase">ছবি যোগ করুন</p>}
               <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" accept="image/*" />
             </div>
+
+            {/* পাসওয়ার্ড কনফার্মেশন ফিল্ড (প্রতিবার পণ্য অ্যাড/এডিট করার জন্য) */}
+            <div className="bg-red-50 p-3 rounded-xl border border-red-100">
+               <label className="block text-[10px] font-bold text-red-500 mb-1 ml-1 uppercase">নিরাপত্তার জন্য পাসওয়ার্ড দিন *</label>
+               <input 
+                 type="password" 
+                 value={actionPassword} 
+                 onChange={(e) => setActionPassword(e.target.value)} 
+                 placeholder="অ্যাডমিন পাসওয়ার্ড..." 
+                 className="w-full bg-white border border-red-200 p-3 rounded-xl outline-none font-bold text-red-600 focus:border-red-500" 
+                 required
+               />
+            </div>
+
             <button type="submit" className={`w-full text-white font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95 ${editingId ? 'bg-orange-500' : 'bg-green-600 hover:bg-green-700'}`}>
-              {editingId ? 'আপডেট করুন' : 'পণ্য সেভ করুন'}
+              {editingId ? 'নিশ্চিত করুন ও আপডেট করুন' : 'নিশ্চিত করুন ও সেভ করুন'}
             </button>
             {editingId && (
-              <button type="button" onClick={() => { setEditingId(null); setFormData({name: '', description: '', quantity: '', mrp: '', dp: '', pv: '', image: '', category: 'General'}); }} className="w-full text-gray-500 font-bold py-2 text-xs">ক্যানসেল</button>
+              <button type="button" onClick={() => { setEditingId(null); setFormData({name: '', description: '', quantity: '', mrp: '', dp: '', pv: '', image: '', category: 'General'}); setActionPassword(''); }} className="w-full text-gray-500 font-bold py-2 text-xs">ক্যানসেল</button>
             )}
           </form>
         </div>
@@ -284,7 +332,7 @@ const Admin: React.FC<AdminProps> = ({ products, onAdd, onUpdate, onDelete, onDe
               <p className="text-xs text-gray-500 font-bold">মোট {products.length} টি পণ্য</p>
             </div>
             <div className="flex space-x-2">
-               <button onClick={onDeleteAll} className="text-[10px] font-black bg-red-50 text-red-600 px-3 py-2 rounded-xl border border-red-100">সব মুছুন</button>
+               <button onClick={handleDeleteAllCheck} className="text-[10px] font-black bg-red-50 text-red-600 px-3 py-2 rounded-xl border border-red-100">সব মুছুন</button>
                <button onClick={handleLogout} className="text-[10px] font-black bg-gray-200 text-gray-600 px-3 py-2 rounded-xl hover:bg-gray-300">লগ আউট</button>
             </div>
           </div>
@@ -295,12 +343,15 @@ const Admin: React.FC<AdminProps> = ({ products, onAdd, onUpdate, onDelete, onDe
                   <img src={p.image} className="w-12 h-12 rounded-xl object-cover mr-4 shadow-sm" />
                   <div>
                     <p className="font-black text-sm text-gray-800">{p.name}</p>
-                    <p className="text-[10px] font-bold text-gray-400">MRP: ৳{p.mrp} | PV: {p.pv}</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      <span className="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-md">{p.category}</span>
+                      <span className="text-[10px] font-bold text-gray-400 py-0.5">MRP: ৳{p.mrp} | PV: {p.pv}</span>
+                    </div>
                   </div>
                 </div>
                 <div className="flex space-x-2">
                   <button onClick={() => { setEditingId(p.id); setFormData({...p, mrp: p.mrp.toString(), dp: p.dp.toString(), pv: p.pv.toString()}); window.scrollTo(0,0); }} className="p-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" strokeWidth="2.5"/></svg></button>
-                  <button onClick={() => onDelete(p.id)} className="p-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeWidth="2.5"/></svg></button>
+                  <button onClick={() => handleDeleteCheck(p.id)} className="p-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeWidth="2.5"/></svg></button>
                 </div>
               </div>
             ))}
