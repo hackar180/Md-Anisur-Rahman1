@@ -1,0 +1,81 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "phoneNumber": { "type": "string" },
+        "enrolledCourses": { "type": "array", "items": { "type": "string" } },
+        "progress": { "type": "object" }
+      },
+      "required": ["uid", "email", "displayName", "role", "createdAt"]
+    },
+    "Course": {
+      "title": "Course",
+      "description": "Madrasa course data",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "instructor": { "type": "string" },
+        "lessons": { "type": "array" },
+        "isLive": { "type": "boolean" },
+        "liveLink": { "type": "string" }
+      },
+      "required": ["title", "description", "category", "thumbnail", "instructor"]
+    },
+    "RegistrationStats": {
+      "title": "RegistrationStats",
+      "description": "Statistics for registrations",
+      "type": "object",
+      "properties": {
+        "count": { "type": "number" }
+      },
+      "required": ["count"]
+    },
+    "StudentRegistration": {
+      "title": "StudentRegistration",
+      "description": "Student registration form data",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "contact": { "type": "string" },
+        "age": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "preferredTime": { "type": "string" },
+        "preferredMonth": { "type": "string" },
+        "preferredYear": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "address", "contact", "age", "preferredTime", "preferredMonth", "preferredYear"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles"
+    },
+    "/courses/{courseId}": {
+      "schema": "Course",
+      "description": "Courses"
+    },
+    "/stats/{statId}": {
+      "schema": "RegistrationStats",
+      "description": "Global statistics"
+    },
+    "/student_registrations/{regId}": {
+      "schema": "StudentRegistration",
+      "description": "Student registration submissions"
+    }
+  }
+}

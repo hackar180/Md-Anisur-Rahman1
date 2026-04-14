@@ -1,0 +1,21 @@
+{
+  "name": "Al Hera Rahima Akhtar Madrasa",
+  "short_name": "Al Hera",
+  "description": "Islamic Online Mohila Madrasa",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#065f46",
+  "theme_color": "#065f46",
+  "icons": [
+    {
+      "src": "https://picsum.photos/seed/madrasa/192/192",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://picsum.photos/seed/madrasa/512/512",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

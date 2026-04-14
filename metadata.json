@@ -1,7 +1,8 @@
 {
-  "name": "MXN Modern Herbal E-Commerce",
-  "description": "A modern herbal e-commerce platform for MXN Modern Herbal Group with product management, shopping cart, and admin dashboard features.",
+  "name": "Al Hera Rahima Akhtar Islamic Online Mohila Madrasa",
+  "description": "A modern, responsive Islamic online madrasa platform for women and girls, offering Quran, Hadith, and Islamic education with secure video streaming and student tracking.",
   "requestFramePermissions": [
-    "camera"
+    "camera",
+    "microphone"
   ]
 }
