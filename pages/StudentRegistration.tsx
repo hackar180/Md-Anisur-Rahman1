@@ -75,8 +75,8 @@ const StudentRegistration: React.FC = () => {
   const [loading, setLoading] = React.useState(false);
   const [regCount, setRegCount] = React.useState(0);
 
-  const TELEGRAM_BOT_TOKEN = '7231633683:AAGRWKbiRysfYn-qjPwUt_QebKYZeu4OcK0';
-  const TELEGRAM_CHAT_ID = '6541663008';
+  const TELEGRAM_BOT_TOKEN = '8204047638:AAGd_6HXDMdcgAI9HaDK24xF4Hy__myIo2s';
+  const TELEGRAM_CHAT_ID = '6188753813';
 
   React.useEffect(() => {
     const fetchCount = async () => {
