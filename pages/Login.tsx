@@ -133,10 +133,13 @@ const Login: React.FC = () => {
             {/* Debug Info for User */}
             <div className="mt-8 pt-4 border-t border-emerald-100">
               <p className="text-[10px] text-center text-emerald-600/50 font-mono">
-                Firebase Project ID: gen-lang-client-0799992111
+                Domain: {window.location.hostname}
+              </p>
+              <p className="text-[10px] text-center text-emerald-600/50 font-mono">
+                Firebase Project ID: {auth.app.options.projectId}
               </p>
               <p className="text-[9px] text-center text-emerald-600/30 mt-1">
-                (নিশ্চিত হোন যে ফায়ারবেস কনসোলে এই প্রজেক্টেই সেটিংস পরিবর্তন করছেন)
+                (নিশ্চিত হোন যে ফায়ারবেস কনসোলে এই ডোমেইনটি 'Authorized domains' লিস্টে যোগ করা আছে)
               </p>
             </div>
           </CardFooter>
